@@ -5,13 +5,14 @@ __time__ = '2017/7/6 14:47'
 # If this runs wrong, don't ask me, I don't know why;
 # If this runs right, thank god, and I don't know why.
 # Maybe the answer, my friend, is blowing in the wind.
-
+import sys
 import tensorflow as tf
 import os, time
 from train.CNN_for_tfrecords import Flags
 
 
 import cv2
+
 
 height = Flags.height
 width = Flags.width
@@ -50,10 +51,12 @@ def CNN_model(class_num, input_image):
     dropout = tf.layers.dropout(inputs=dense, rate=0.4, seed=1020, training=True, name="dropout")
     logits = tf.layers.dense(dropout, units=class_num, activation=tf.nn.relu, name="logits")  # [batch_size, class_num]
     return logits
+# s = ""
+# s.end
 
-
-def predict_single_image(image_path):
-    checkpoint = tf.train.get_checkpoint_state("../train_log")
+def predict_single_image(image_path, train_log_path):
+    # if sys.argv[0].endswith(""):
+    checkpoint = tf.train.get_checkpoint_state(train_log_path)
     input_checkpoint = checkpoint.model_checkpoint_path
 
     image = read_single_image(image_path)
@@ -70,7 +73,7 @@ def predict_single_image(image_path):
         # threads = tf.train.start_queue_runners(sess=sess, coord=coord)
         sess.run(init_op)
         saver.restore(sess, input_checkpoint)
-        sess.run(predict_value, predict_index)
+        predict_value, predict_index = sess.run([predict_value, predict_index])
         for i in range(len(predict_index[0])):
             print('[INFO] predict as: %s,  probabilities: %.4f' %
                   (label_names[predict_index[0][i]], predict_value[0][i]))
@@ -87,6 +90,8 @@ def get_label_names(gender=True):
         pass
     return label_names
 
-
-predict_single_image("/media/oukohou/E/gong_an_pictures0612/gong_an_pictures/data/test_data/3000_per_gendeer/1/5007.JPG")
+image_path_ = sys.argv[1]
+# print(image_path_)
+train_log_path = sys.argv[2]
+predict_single_image(image_path_, train_log_path)
 
