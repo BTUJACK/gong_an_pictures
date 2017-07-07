@@ -1,0 +1,11 @@
+# ignore some files and directories.
+data/test_data/3000_per_gender/0
+data/test_data/3000_per_gender/1
+data/test_data/500_per_gender/0
+data/test_data/500_per_gender/1
+data/tf_records
+data/train/1000_per_gender
+data/train/F1998
+data/train/M1998
+data/train/tr_records
+train_log
