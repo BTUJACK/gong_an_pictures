@@ -17,7 +17,7 @@ from PIL import Image
 
 
 def create_record(class_path, resize_height, resize_width, depth):
-    current_time = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+    current_time = time.strftime("_%Y-%m-%d_%H-%M-%S", time.localtime())
     path_to_write = "./tf_records/" + os.path.basename(class_path) + current_time + ".tfrecords"
     writer = tf.python_io.TFRecordWriter(path_to_write)
     for path, subdirs, files in os.walk(class_path):
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '--class_path', type=str,
         # default="/home/oukohou/study/tensorflow/oukohou/gong_an_pictures/data/train/1000_per_gender",
-        default="./test_data/3000_per_gendeer",
+        default="./train/gender_for_age_from_93_to_2000",
         help='directory that contains the subfolders of images.')
     parser.add_argument(
         '--height', type=int, default=188,

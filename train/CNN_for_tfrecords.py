@@ -8,9 +8,10 @@ If this runs right, thank god, and I don't know why.
 Maybe the answer, my friend, is blowing in the wind.
 """
 
-import tensorflow as tf
 import os
 import time
+
+import tensorflow as tf
 from tensorflow.python.platform import gfile
 
 tf.logging.set_verbosity(tf.logging.INFO)
@@ -31,7 +32,6 @@ tf.app.flags.DEFINE_string("log_dir", "../train_log", "directory to save checkpo
 tf.app.flags.DEFINE_integer("total_epochs", 1020, "how many epochs in total to run train_op.")
 tf.app.flags.DEFINE_integer("height", 188, "height")
 tf.app.flags.DEFINE_integer("width", 140, "width")
-# tf.app.flags.DEFINE_integer("width", 140, "width")
 Flags = tf.app.flags.FLAGS
 
 height = Flags.height
@@ -111,7 +111,7 @@ def run_train_model():
             sess.run(init_op)
             coord = tf.train.Coordinator()
             threads = tf.train.start_queue_runners(sess=sess, coord=coord)
-            global_step = 0
+            global global_step
             try:
                 while not coord.should_stop():
                     start_time = time.time()

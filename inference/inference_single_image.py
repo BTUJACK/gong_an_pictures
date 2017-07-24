@@ -6,13 +6,11 @@ __time__ = '2017/7/6 14:47'
 # If this runs right, thank god, and I don't know why.
 # Maybe the answer, my friend, is blowing in the wind.
 import sys
+
 import tensorflow as tf
-import os, time
+
 from train.CNN_for_tfrecords import Flags
-
-
 import cv2
-
 
 height = Flags.height
 width = Flags.width
@@ -51,6 +49,8 @@ def CNN_model(class_num, input_image):
     dropout = tf.layers.dropout(inputs=dense, rate=0.4, seed=1020, training=True, name="dropout")
     logits = tf.layers.dense(dropout, units=class_num, activation=tf.nn.relu, name="logits")  # [batch_size, class_num]
     return logits
+
+
 # s = ""
 # s.end
 
@@ -90,8 +90,8 @@ def get_label_names(gender=True):
         pass
     return label_names
 
+
 image_path_ = sys.argv[1]
 # print(image_path_)
 train_log_path = sys.argv[2]
 predict_single_image(image_path_, train_log_path)
-
