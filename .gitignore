@@ -12,3 +12,6 @@ data/test_data/3000_per_gendeer/0
 data/test_data/3000_per_gendeer/1
 train/CNN_for_tfrecords.pyc
 train/__init__.pyc
+data/test_data/500_per_gender/
+data/train/gender_for_age_from_93_to_2000/
+test.md
