@@ -51,10 +51,10 @@ if __name__ == "__main__":
         default="./train/gender_for_age_from_93_to_2000",
         help='directory that contains the subfolders of images.')
     parser.add_argument(
-        '--height', type=int, default=188,
+        '--height', type=int, default=766,
         help='height you want to resize the image to.')
     parser.add_argument(
-        '--width', type=int, default=140,
+        '--width', type=int, default=574,
         help='width you want to resize the image to')
     Flags, unparsed = parser.parse_known_args()
     # tf.app.run(main=main)

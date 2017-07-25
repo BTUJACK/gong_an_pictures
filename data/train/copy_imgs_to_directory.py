@@ -17,7 +17,7 @@ def copy_file_to_path(origianl_file_path, new_file_path, begin_number_of_img, en
                 print("got unexpected file: %s which is not image, pass..." % filename)
                 continue
             file_number = int(filename.split(".")[0])
-            if begin_number_of_img <= file_number <= end_number_of_img:
+            if begin_number_of_img <= file_number < end_number_of_img:
                 old_path = os.path.join(path, filename)
                 label = path.split(os.sep)[-1]
                 if label.startswith("F"):
@@ -32,4 +32,4 @@ def copy_file_to_path(origianl_file_path, new_file_path, begin_number_of_img, en
 if __name__ == "__main__":
     original_file = "E:\gong_an_data\data"
     new_file = "E:\gong_an_pictures0612\gong_an_pictures\data\\train\gender_for_age_from_93_to_2000"
-    copy_file_to_path(original_file, new_file, 1000, 1000)
+    copy_file_to_path(original_file, new_file, 2000, 2500)

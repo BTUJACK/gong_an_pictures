@@ -8,11 +8,13 @@ If this runs right, thank god, and I don't know why.
 Maybe the answer, my friend, is blowing in the wind.
 """
 
-import tensorflow as tf
 import os
-import time
-from train.CNN_for_tfrecords import Flags
+
+import tensorflow as tf
+
 from tensorflow.python.platform import gfile
+
+from train.CNN_for_tfrecords import Flags
 
 test_record_path = "../data/tf_records/500_per_gender2017-06-12_10-15-03.tfrecords"
 test_batch_size = 500
@@ -51,14 +53,21 @@ def read_decode_tfrecords(records_path, num_epochs=1, batch_size=Flags.batch_siz
 def CNN_model(class_num, input_image):
     input_layer = tf.reshape(input_image, [-1, height, width, 3], name="input_layer")
 
-    pool0 = tf.layers.max_pooling2d(input_layer, pool_size=[2, 2], strides=[2, 2], name="pool0")
-    conv1 = tf.layers.conv2d(pool0, filters=32, kernel_size=[3, 3], strides=(1, 1),
+    conv_before_1 = tf.layers.conv2d(input_layer, filters=64, kernel_size=[3, 3], activation=tf.nn.relu,
+                                     name="conv_before_1")
+    pool_before_1 = tf.layers.max_pooling2d(conv_before_1, pool_size=[2, 2], strides=[2, 2], name="pool_before_1")
+    conv_before_2 = tf.layers.conv2d(pool_before_1, filters=256, kernel_size=[3, 3], activation=tf.nn.relu,
+                                     name="conv_berfore_2")
+    pool_before_2 = tf.layers.max_pooling2d(conv_before_2, pool_size=[2, 2], strides=[2, 2], name="pool_before_2")
+
+    pool0 = tf.layers.max_pooling2d(pool_before_2, pool_size=[2, 2], strides=[2, 2], name="pool0")
+    conv1 = tf.layers.conv2d(pool0, filters=512, kernel_size=[3, 3], strides=(1, 1),
                              padding="valid", activation=tf.nn.relu, name="conv1")
     pool1 = tf.layers.max_pooling2d(conv1, pool_size=[2, 2], strides=[2, 2], name="pool1")
-    conv2 = tf.layers.conv2d(pool1, filters=64, kernel_size=[3, 3],
+    conv2 = tf.layers.conv2d(pool1, filters=256, kernel_size=[3, 3],
                              padding="valid", activation=tf.nn.relu, name="conv2")
     pool2 = tf.layers.max_pooling2d(conv2, pool_size=[2, 2], strides=[2, 2], name="pool2")
-    conv3 = tf.layers.conv2d(pool2, filters=48, kernel_size=[3, 3], padding="valid",
+    conv3 = tf.layers.conv2d(pool2, filters=128, kernel_size=[3, 3], padding="valid",
                              activation=tf.nn.relu, name="conv3")
     pool3 = tf.layers.max_pooling2d(conv3, pool_size=[2, 2], strides=[2, 2], name="pool3")
     pool3_flatten = tf.reshape(pool3, [-1, 7 * 10 * 48], name="pool3_flatten")

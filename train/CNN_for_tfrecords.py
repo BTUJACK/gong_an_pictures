@@ -29,9 +29,8 @@ tf.app.flags.DEFINE_integer("batch_size", 40, "batch size.")
 tf.app.flags.DEFINE_integer("class_num", 2, "classes of images, default to 5")
 tf.app.flags.DEFINE_integer("learning_rate", 0.01, "learning rate.")
 tf.app.flags.DEFINE_string("log_dir", "../train_log", "directory to save checkpoints.")
-tf.app.flags.DEFINE_integer("total_epochs", 1020, "how many epochs in total to run train_op.")
-tf.app.flags.DEFINE_integer("height", 188, "height")
-tf.app.flags.DEFINE_integer("width", 140, "width")
+tf.app.flags.DEFINE_integer("height", 766, "height")
+tf.app.flags.DEFINE_integer("width", 574, "width")
 Flags = tf.app.flags.FLAGS
 
 height = Flags.height
@@ -68,14 +67,21 @@ def read_decode_tfrecords(records_path, num_epochs=1020, batch_size=Flags.batch_
 def CNN_model(class_num, input_image):
     input_layer = tf.reshape(input_image, [-1, height, width, 3], name="input_layer")
 
-    pool0 = tf.layers.max_pooling2d(input_layer, pool_size=[2, 2], strides=[2, 2], name="pool0")
-    conv1 = tf.layers.conv2d(pool0, filters=32, kernel_size=[3, 3], strides=(1, 1),
+    conv_before_1 = tf.layers.conv2d(input_layer, filters=64, kernel_size=[3, 3], activation=tf.nn.relu,
+                                     name="conv_before_1")
+    pool_before_1 = tf.layers.max_pooling2d(conv_before_1, pool_size=[2, 2], strides=[2, 2], name="pool_before_1")
+    conv_before_2 = tf.layers.conv2d(pool_before_1, filters=256, kernel_size=[3, 3], activation=tf.nn.relu,
+                                     name="conv_berfore_2")
+    pool_before_2 = tf.layers.max_pooling2d(conv_before_2, pool_size=[2, 2], strides=[2, 2], name="pool_before_2")
+
+    pool0 = tf.layers.max_pooling2d(pool_before_2, pool_size=[2, 2], strides=[2, 2], name="pool0")
+    conv1 = tf.layers.conv2d(pool0, filters=512, kernel_size=[3, 3], strides=(1, 1),
                              padding="valid", activation=tf.nn.relu, name="conv1")
     pool1 = tf.layers.max_pooling2d(conv1, pool_size=[2, 2], strides=[2, 2], name="pool1")
-    conv2 = tf.layers.conv2d(pool1, filters=64, kernel_size=[3, 3],
+    conv2 = tf.layers.conv2d(pool1, filters=256, kernel_size=[3, 3],
                              padding="valid", activation=tf.nn.relu, name="conv2")
     pool2 = tf.layers.max_pooling2d(conv2, pool_size=[2, 2], strides=[2, 2], name="pool2")
-    conv3 = tf.layers.conv2d(pool2, filters=48, kernel_size=[3, 3], padding="valid",
+    conv3 = tf.layers.conv2d(pool2, filters=128, kernel_size=[3, 3], padding="valid",
                              activation=tf.nn.relu, name="conv3")
     pool3 = tf.layers.max_pooling2d(conv3, pool_size=[2, 2], strides=[2, 2], name="pool3")
     pool3_flatten = tf.reshape(pool3, [-1, 7 * 10 * 48], name="pool3_flatten")
@@ -105,19 +111,21 @@ def run_train_model():
 
         init_op = tf.group(tf.global_variables_initializer(),
                            tf.local_variables_initializer())
+
+        # my_summary = tf.summary.merge_all()
         supervisor = tf.train.Supervisor(logdir=Flags.log_dir)
 
         with supervisor.managed_session() as sess:
             sess.run(init_op)
             coord = tf.train.Coordinator()
             threads = tf.train.start_queue_runners(sess=sess, coord=coord)
-            global global_step
+            # global global_step
             try:
                 while not coord.should_stop():
                     start_time = time.time()
                     _, losses, global_step = sess.run([train_model_op, loss, global_step_de])
                     end_time = time.time()
-                    if global_step % 100 == 0:
+                    if global_step % 1000 == 0:
                         print(
                             "for step:%d, loss: %.3f, cost time: %.3f" % (global_step, losses, end_time - start_time))
             except tf.errors.OutOfRangeError as e:
