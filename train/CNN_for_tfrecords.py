@@ -14,6 +14,8 @@ import time
 import tensorflow as tf
 from tensorflow.python.platform import gfile
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "1,2,3"
+
 tf.logging.set_verbosity(tf.logging.INFO)
 
 tf.app.flags.DEFINE_integer("num_epochs",
@@ -56,11 +58,12 @@ def read_decode_tfrecords(records_path, num_epochs=1020, batch_size=Flags.batch_
                                                  "depth": tf.FixedLenFeature([], tf.int64)},
                                        name="parse_single_example")
     image = tf.decode_raw(features["img_raw"], tf.uint8, name="decode_raw")
-    image.set_shape([IMAGE_PIXELS])
+    image.set_shape([height * width * 3])
     image = tf.cast(image, tf.float32) * (1.0 / 255) - 0.5
     label = tf.cast(features["label"], tf.int32)
     images, labels = tf.train.shuffle_batch([image, label], batch_size=batch_size, num_threads=num_threads,
                                             name="shuffle_bath", capacity=1020, min_after_dequeue=64)
+    print("images' shape is :", str(images.shape))
     return images, labels
 
 
@@ -68,10 +71,10 @@ def CNN_model(class_num, input_image):
     input_layer = tf.reshape(input_image, [-1, height, width, 3], name="input_layer")
 
     conv_before_1 = tf.layers.conv2d(input_layer, filters=64, kernel_size=[3, 3], activation=tf.nn.relu,
-                                     name="conv_before_1")
+                                     strides=(1, 1), name="conv_before_1")
     pool_before_1 = tf.layers.max_pooling2d(conv_before_1, pool_size=[2, 2], strides=[2, 2], name="pool_before_1")
     conv_before_2 = tf.layers.conv2d(pool_before_1, filters=256, kernel_size=[3, 3], activation=tf.nn.relu,
-                                     name="conv_berfore_2")
+                                     strides=(1, 1), name="conv_berfore_2")
     pool_before_2 = tf.layers.max_pooling2d(conv_before_2, pool_size=[2, 2], strides=[2, 2], name="pool_before_2")
 
     pool0 = tf.layers.max_pooling2d(pool_before_2, pool_size=[2, 2], strides=[2, 2], name="pool0")
@@ -80,11 +83,12 @@ def CNN_model(class_num, input_image):
     pool1 = tf.layers.max_pooling2d(conv1, pool_size=[2, 2], strides=[2, 2], name="pool1")
     conv2 = tf.layers.conv2d(pool1, filters=256, kernel_size=[3, 3],
                              padding="valid", activation=tf.nn.relu, name="conv2")
-    pool2 = tf.layers.max_pooling2d(conv2, pool_size=[2, 2], strides=[2, 2], name="pool2")
-    conv3 = tf.layers.conv2d(pool2, filters=128, kernel_size=[3, 3], padding="valid",
+    conv_1x1 = tf.layers.conv2d(conv2, filters=128, kernel_size=[1, 1], activation=tf.nn.relu, name="1x1_conv")
+    pool2 = tf.layers.max_pooling2d(conv_1x1, pool_size=[2, 2], strides=[2, 2], name="pool2")
+    conv3 = tf.layers.conv2d(pool2, filters=64, kernel_size=[3, 3], padding="valid",
                              activation=tf.nn.relu, name="conv3")
     pool3 = tf.layers.max_pooling2d(conv3, pool_size=[2, 2], strides=[2, 2], name="pool3")
-    pool3_flatten = tf.reshape(pool3, [-1, 7 * 10 * 48], name="pool3_flatten")
+    pool3_flatten = tf.reshape(pool3, [-1, 7 * 10 * 64], name="pool3_flatten")
     dense = tf.layers.dense(pool3_flatten, units=1024, activation=tf.nn.relu, name="dense")
     dropout = tf.layers.dropout(inputs=dense, rate=0.4, seed=1020, training=True, name="dropout")
     logits = tf.layers.dense(dropout, units=class_num, activation=tf.nn.relu, name="logits")  # [batch_size, class_num]
@@ -105,7 +109,8 @@ def train_model(labels, logits, learning_rate=0.001):
 
 def run_train_model():
     with tf.Graph().as_default():
-        images, labels = read_decode_tfrecords(Flags.record_path, Flags.num_epochs, Flags.batch_size)
+        images, labels = read_decode_tfrecords(records_path=Flags.record_path, num_epochs=Flags.num_epochs,
+                                               batch_size=Flags.batch_size)
         logits = CNN_model(Flags.class_num, images)
         train_model_op, global_step_de, loss = train_model(labels, logits, Flags.learning_rate)
 
@@ -137,6 +142,7 @@ def run_train_model():
 
 
 def main(_):
+    # print(Flags.batch_size)
     run_train_model()
 
 
